@@ -1,0 +1,49 @@
+<ul class="metismenu" id="menu">
+    <li><a href="/panel/">داشبورد</a></li>
+    <li>
+        <a class="has-arrow ai-icon" href="#" aria-expanded="false">
+            <i class="flaticon-025-dashboard"></i><span class="nav-text">نمره</span></a>
+        <ul aria-expanded="false">
+            <li><a href="/panel/scores/">نمرات ماه</a></li>
+            <li><a href="/panel/scores/chart">نمودار نمرات</a></li>
+            <li><a href="/panel/scores/sheet">دریافت کارنامه</a></li>
+            <li><a href="/panel/scores/protest">اعتراض</a></li>
+        </ul>
+    </li>
+    <li>
+        <a class="has-arrow ai-icon" href="#" aria-expanded="false"><i
+                class="flaticon-381-folder-15"></i><span class="nav-text">تکلیف</span></a>
+        <ul aria-expanded="false">
+            <li><a href="/panel/homework/">جدول تکالیف</a></li>
+            {# if the user is observer student #}
+            <li><a href="/panel/homework/add">ثبت تکلیف</a></li>
+        </ul>
+    </li>
+    <li>
+        <a class="has-arrow ai-icon" href="#" aria-expanded="false"><i
+                class="flaticon-041-graph"></i><span class="nav-text">کتابخانه</span></a>
+        <ul aria-expanded="false">
+            <li><a href="/panel/library/reserve">رزرو کتاب</a></li>
+            <li><a href="/panel/library/reserved">کتابهای رزرو شده</a></li>
+            {# if the user is librarian student #}
+            <li><a href="/panel/library/manage">مدیریت کتاب</a></li>
+        </ul>
+    </li>
+    <li>
+        <a href="#" class="has-arrow ai-icon" aria-expanded="false">
+            <i class="flaticon-381-calendar-6"></i><span class="nav-text">کلاس</span>
+        </a>
+        <ul aria-expanded="false">
+            <li><a href="/panel/class/table">جدول زمانی</a></li>
+        </ul>
+    </li>
+    <li>
+        <a href="#" class="has-arrow ai-icon" aria-expanded="false">
+            <i class="flaticon-381-database-1"></i><span class="nav-text">منابع</span>
+        </a>
+        <ul aria-expanded="false">
+            <li><a href="/panel/resources/teaching">منابع آموزشی</a></li>
+            <li><a href="/panel/resources/sample-exam">نمونه سوالات</a></li>
+        </ul>
+    </li>
+</ul>
