@@ -5,11 +5,11 @@ from django.utils.translation import gettext_lazy as _
 
 class LoginForm(AuthenticationForm):
     username = forms.CharField(
-        label=_("نام کاربری"),
+        label=_("کدملی"),
         widget=forms.TextInput(attrs={'class': 'form-control'}),
     )
     password = forms.CharField(
-        label=_("رمز عبور"),
+        label=_("سریال شناسنامه"),
         widget=forms.PasswordInput(attrs={'class': 'form-control'}),
     )
     error_messages = {

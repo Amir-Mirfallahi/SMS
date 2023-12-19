@@ -7,7 +7,7 @@
                 <a href="javascript:void(0)">صفحه اصلی</a>
             </li>
             <li class="breadcrumb-item">
-                <a href="javascript:void(0)">مدیریت نمرات</a>
+                <a href="javascript:void(0)">مدیریت نمرات کارنامه</a>
             </li>
         </ol>
     </div>
@@ -67,7 +67,8 @@
                                                                 <div class="progress-bar progress-animated bg-light"
                                                                      style=""></div>
                                                             </div>
-                                                            <small>میانگین کل کلاس {{ taught_class }}%</small>
+                                                            <small>میانگین کل
+                                                                کلاس {{ taught_class|average_report_sheet_score }}</small>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -106,7 +107,8 @@
                             >
                                 <div class="row">
                                     <div class="card">
-                                        <div class="card-header"><h4 class="card-title">فرم وارد کردن نمرات</h4></div>
+                                        <div class="card-header"><h4 class="card-title">فرم وارد کردن نمرات کارنامه
+                                            ها</h4></div>
                                         <div class="card-body">
                                             <div class="table-responsive">
                                                 <table class="table table-responsive-md">
@@ -114,11 +116,10 @@
                                                     <tr>
                                                         <th style="width:80px;"><strong>#</strong></th>
                                                         <th><strong>نام</strong></th>
-                                                        <th><strong>نام خانوادگی</strong></th>
+                                                        <th style="width: 200px"><strong>نام خانوادگی</strong></th>
                                                         <th><strong>ترم</strong></th>
-                                                        <th><strong>نمرات</strong></th>
-                                                        <th><strong>ثبت نمره جدید</strong></th>
-
+                                                        <th><strong>عنوان</strong></th>
+                                                        <th><strong>نمره</strong></th>
                                                     </tr>
                                                     </thead>
                                                     <tbody>
@@ -128,39 +129,27 @@
                                                             <td>{{ student.profile.user.first_name }}</td>
                                                             <td>{{ student.profile.user.last_name }}</td>
                                                             <td>ترم {{ semester }}</td>
-                                                            <td class="row gap-1" id="scores">
-                                                                {% for score in student.scores.all %}
-                                                                    {% if score.continuous_score > 15 %}
-                                                                        <span class="col-2 badge badge-success co-score hoverable"
-                                                                              id="{{ score.id }}">{{ score.continuous_score }}</span>
-                                                                    {% elif score.continuous_score <= 15 and score.continuous_score >= 10 %}
-                                                                        <span class="col-2 badge badge-warning co-score hoverable"
-                                                                              id="{{ score.id }}">{{ score.continuous_score }}</span>
-                                                                    {% elif score.continuous_score < 10 %}
-                                                                        <span class="col-2 badge badge-danger co-score hoverable"
-                                                                              id="{{ score.id }}">{{ score.continuous_score }}</span>
-                                                                    {% endif %}
-                                                                {% endfor %}
+                                                            <td class="row gap-1" id="scores-{{ student.id }}">
+                                                                <select class="default-select form-control report-sheet-type"
+                                                                        data-student="{{ student.id }}"
+                                                                        name="report-sheet-type">
+                                                                    <option value="---" disabled selected>----------
+                                                                    </option>
+                                                                    <option value="1">
+                                                                        تکوینی
+                                                                    </option>
+                                                                    <option value="2">
+                                                                        نوبت
+                                                                    </option>
+                                                                    <option value="3">
+                                                                        پایانی
+                                                                    </option>
+                                                                </select>
                                                             </td>
                                                             <td>
-                                                                <form class="score-form">
-                                                                    <input type="hidden" name="student"
-                                                                           value="{{ student.id }}">
-                                                                    <input type="hidden" name="semester"
-                                                                           value="{{ semester }}">
-                                                                    <input type="hidden" name="taughtClass"
-                                                                           value="{{ taught_class }}">
-
-                                                                    <div class="row">
-                                                                        <div class="col-8">
-                                                                            <input type="text" name="score"
-                                                                                   class="form-control">
-                                                                        </div>
-                                                                        <div class="col-2">
-                                                                            <button class="btn btn-success">ثبت</button>
-                                                                        </div>
-                                                                    </div>
-                                                                </form>
+                                                                <input type="text" name="score" id="score-{{ student.id }}"
+                                                                       class="form-control w-50 score" placeholder="ثبت نیست"
+                                                                       data-student="{{ student.id }}">
                                                             </td>
                                                         </tr>
                                                     {% endfor %}
@@ -171,7 +160,6 @@
                                     </div>
                                 </div>
                             </div>
-
                         </div>
                     </div>
                 </div>
@@ -182,58 +170,60 @@
 
 {% block scripts %}
     <script>
-        $(document).ready(function () {
-            $('.co-score').on('click', function () {
-                location.href = `/panel/scores/manage-score/${$(this).attr('id')}`;
-            });
+        $('.report-sheet-type').on('change', function (event) {
+            // 'this' refers to the .report-sheet-type element that was changed.
+            let score_type = $(this).val(); // Use val() to get the value
+            let student_id = $(this).attr('data-student');
+            let semester = "{{ semester }}"; // Ensure this script runs on a server-side template
+            let taughtClass = "{{ taught_class }}"; // Ensure this script runs on a server-side template
 
-        });
-        $('.score-form').on('submit', function (event) {
-            event.preventDefault();
-            const score = this.score.value;
-            const student = this.student.value;
-            const semester = this.semester.value;
-            const taughtClass = this.taughtClass.value;
 
             $.ajax({
-                url: "{% url 'create_score' %}",
-                type: 'POST',
+                url: `/panel/scores/get-report-sheet-score/?student_id=${student_id}&semester_id=${semester}&taught_class=${taughtClass}&score_type=${score_type}`,
+                type: 'GET',
+                // Add success and error handlers as needed
+                success: function(response) {
+                    console.log(response)
+                    $(`#score-${student_id}`).val(response.report_sheet_score);
+                },
+                error: function(error) {
+                    toastr.error('مشکلی در اتصال با سرور پیش آمد. لطفا دوباره تلاش کنید.', 'خطا❗')
+                }
+            });
+        });
+        $('.score').on('change', function (event) {
+            // 'this' refers to the .report-sheet-type element that was changed.
+            let score_type = $(`.report-sheet-type[data-student=${$(this).attr('data-student')}]`).val(); // Use val() to get the value
+            let student = $(this).attr('data-student');
+            let semester = "{{ semester }}";
+            let taughtClass = "{{ taught_class }}"; // Ensure this script runs on a server-side template
+            let report_sheet_score = $(this).val()
+
+
+            $.ajax({
+                url: `/panel/scores/update-report-sheet-score/`,
+                type: 'PUT',
                 data: {
-                    "continuous_score": score,
+                    "report_sheet_score": report_sheet_score,
                     "student": student,
                     "taught_class": taughtClass,
-                    "semester": semester
+                    "semester": semester,
+                    "score_type": score_type,
+
                 },
                 dataType: 'json',
                 headers: {
                     "X-CSRFToken": getCookie("csrftoken")
                 },
-                success: function (data) {
-                    if (data.continuous_score > 15) {
-                        $('#scores').append(
-                            `<span class="col-2 badge badge-success co-score hoverable"
-                              id="${data.id}">${data.continuous_score}</span>`
-                        )
-                    } else if (data.continuous_score <= 15 && score.continuous_score >= 10) {
-                        $('#scores').append(
-                            `<span class="col-2 badge badge-warning co-score hoverable"
-                              id="${data.id}">${data.continuous_score}</span>`
-                        )
-                    } else if (data.continuous_score < 10) {
-                        $('#scores').append(
-                            `<span class="col-2 badge badge-danger co-score hoverable"
-                              id="${data.id}">${data.continuous_score}</span>`
-                        )
-                    }
-                    toastr.success('با موفقیت ثبت شد', 'موفقیت آمیز!');
+                // Add success and error handlers as needed
+                success: function(response) {
+                    $(`#score-${student}`).val(response.report_sheet_score);
                 },
-                error: function (xhr, status, error) {
-                    // Handle error
-                    console.error('Error:', status, error);
+                error: function(error) {
+                    toastr.error('مشکلی در اتصال با سرور پیش آمد. لطفا دوباره تلاش کنید.', 'خطا❗')
                 }
             });
         });
-
         function getCookie(name) {
             var cookieValue = null;
             if (document.cookie && document.cookie !== '') {
@@ -249,6 +239,48 @@
             }
             return cookieValue;
         }
+        $(document).ready(function () {
+            localStorage.setItem('semester', false);
+            $("#smartwizard").smartWizard();
+            $('.btn.btn-primary.sw-btn-next').addClass('disabled')
+            $(".btn.btn-primary.sw-btn-next").on('click', function () {
+                if (localStorage.getItem('class_id') && localStorage.getItem('semester') !== 'false') {
+                    location.href = `/panel/scores/manage/report-sheet/${localStorage.getItem('class_id')}/${localStorage.getItem('semester')}#enter-scores`
+                }
+            })
+            $(".btn.btn-primary.sw-btn-prev").on('click', function () {
+                if (location.href.endsWith('#select-semester')) {
+                    location.href = '/panel/scores/manage/report-sheet/';
+                } else if (location.href.endsWith('#enter-scores')) {
+                    location.href = '/panel/scores/manage/report-sheet#select-semester';
+                }
+            })
+        });
 
+        // select the class in Score Management Page
+        function setSelectedClass(id) {
+            try {
+                document.getElementById(`class-${localStorage.getItem('class_id')}`).classList.remove('bg-primary')
+            } catch {
+            }
+            localStorage.setItem('class_id', id)
+            $('.btn.btn-primary.sw-btn-next').removeClass('disabled')
+            document.getElementById(`class-${id}`).classList.add('bg-primary')
+        }
+
+        // select the semester in Score Management Page
+        function setSelectedSemester(id) {
+            try {
+                document.getElementById(`semester-${localStorage.getItem('semester')}`).classList.remove('bg-primary')
+            } catch (err) {
+            }
+            localStorage.setItem('semester', id)
+            $('.btn.btn-primary.sw-btn-next').removeClass('disabled')
+            document.getElementById(`semester-${id}`).classList.add('bg-primary')
+        }
+
+        function getSelectedClass() {
+            return localStorage.getItem('class_id')
+        }
     </script>
 {% endblock %}

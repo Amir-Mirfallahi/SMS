@@ -59,9 +59,9 @@ class UserAdmin(BaseUserAdmin):
 
         # Redirect based on the user's role
         if role == Profile.STUDENT:
-            return redirect(reverse('admin:panel_student_add') + f'?profile={obj.id}')
+            return redirect(reverse('admin:panel_student_add') + f'?profile={int(obj.id) - 1}')
         elif role == Profile.TEACHER:
-            return redirect(reverse('admin:panel_teacher_add') + f'?profile={obj.id}')
+            return redirect(reverse('admin:panel_teacher_add') + f'?profile={int(obj.id) - 1}')
 
         return super().response_add(request, obj, post_url_continue)
 
@@ -70,9 +70,9 @@ class UserAdmin(BaseUserAdmin):
 
         # Redirect based on the user's role
         if role == Profile.STUDENT:
-            return redirect(reverse('admin:panel_student_add') + f'?profile={obj.id}')
+            return redirect(reverse('admin:panel_student_add') + f'?profile={int(obj.id) - 1}')
         elif role == Profile.TEACHER:
-            return redirect(reverse('admin:panel_teacher_add') + f'?profile={obj.id}')
+            return redirect(reverse('admin:panel_teacher_add') + f'?profile={int(obj.id) - 1}')
         return super().response_change(request, obj)
 
 

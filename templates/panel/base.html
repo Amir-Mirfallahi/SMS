@@ -22,7 +22,7 @@
     />
     <link href="{% static 'panel/vendor/jquery-nice-select/css/nice-select.css' %}" rel="stylesheet">
     <link href="{% static 'panel/css/style.css' %}" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'panel/vendor/toastr/css/toastr.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'panel/vendor/toastr/css/toastr.min.css' %}"/>
 </head>
 <body>
 <div id="preloader">
@@ -90,13 +90,7 @@
                     </div>
                 </a>
                 <div class="dropdown-menu dropdown-menu-end">
-                    <a href="panel/account" class="dropdown-item ai-icon">
-                        <svg id="icon-user1" xmlns="http://www.w3.org/2000/svg" class="text-primary" width="18"
-                             height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                             stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
+                    <a href="/auth/logout/" class="dropdown-item ai-icon">
                         <svg id="icon-logout" xmlns="http://www.w3.org/2000/svg" class="text-danger" width="18"
                              height="18"
                              viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -141,51 +135,6 @@
 <script src="{% static 'panel/js/plugins-init/jquery.validate-init.js' %}"></script>
 <script src="{% static 'panel/vendor/jquery-smartwizard/dist/js/jquery.smartWizard.js' %}"></script>
 <script src="{% static 'panel/vendor/toastr/js/toastr.min.js' %}"></script>
-<script>
-    $(document).ready(function () {
-        localStorage.setItem('semester', false);
-        $("#smartwizard").smartWizard();
-        $('.btn.btn-primary.sw-btn-next').addClass('disabled')
-        $(".btn.btn-primary.sw-btn-next").on('click', function () {
-            if (localStorage.getItem('class_id') && localStorage.getItem('semester') !== 'false') {
-                location.href = `/panel/scores/manage/${localStorage.getItem('class_id')}/${localStorage.getItem('semester')}#enter-scores`
-            }
-        })
-        $(".btn.btn-primary.sw-btn-prev").on('click', function () {
-            if (location.href.endsWith('#select-semester')) {
-                location.href = '/panel/scores/manage';
-            } else if (location.href.endsWith('#enter-scores')) {
-                location.href = '/panel/scores/manage#select-semester';
-            }
-        })
-    });
-
-    // select the class in Score Management Page
-    function setSelectedClass(id) {
-        try {
-            document.getElementById(`class-${localStorage.getItem('class_id')}`).classList.remove('bg-primary')
-        } catch {
-        }
-        localStorage.setItem('class_id', id)
-        $('.btn.btn-primary.sw-btn-next').removeClass('disabled')
-        document.getElementById(`class-${id}`).classList.add('bg-primary')
-    }
-
-    // select the semester in Score Management Page
-    function setSelectedSemester(id) {
-        try {
-            document.getElementById(`semester-${localStorage.getItem('semester')}`).classList.remove('bg-primary')
-        } catch (err) {
-        }
-        localStorage.setItem('semester', id)
-        $('.btn.btn-primary.sw-btn-next').removeClass('disabled')
-        document.getElementById(`semester-${id}`).classList.add('bg-primary')
-    }
-
-    function getSelectedClass() {
-        return localStorage.getItem('class_id')
-    }
-</script>
 {% block scripts %}
 {% endblock %}
 </body>

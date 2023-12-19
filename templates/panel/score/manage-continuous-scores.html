@@ -1,0 +1,364 @@
+{% extends 'panel/base.html' %}
+{% load score_tag %}
+{% block content %}
+    <div class="row page-titles">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item active">
+                <a href="javascript:void(0)">صفحه اصلی</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="javascript:void(0)">مدیریت نمرات</a>
+            </li>
+        </ol>
+    </div>
+    <div class="row">
+        <div class="col-xl-12 col-xxl-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">فرم مدیریت</h4>
+                </div>
+                <div class="card-body">
+                    <div
+                            id="smartwizard"
+                            class="form-wizard order-create"
+                    >
+                        <ul class="nav nav-wizard">
+                            <li>
+                                <a
+                                        class="nav-link"
+                                        href="#select-class"
+                                ><span>1</span></a
+                                >
+                            </li>
+                            <li>
+                                <a
+                                        class="nav-link"
+                                        href="#select-semester"
+                                ><span>2</span></a
+                                >
+                            </li>
+                            <li>
+                                <a
+                                        class="nav-link"
+                                        href="#enter-scores"
+                                ><span>3</span></a
+                                >
+                            </li>
+
+                        </ul>
+                        <div class="tab-content">
+                            <div
+                                    id="select-class"
+                                    class="tab-pane"
+                                    role="tabpanel"
+                            >
+                                <div class="row">
+                                    {% for taught_class in taught_classes %}
+                                        <div class="col-lg-4 hoverable taught-class-item"
+                                             onclick="setSelectedClass({{ taught_class.id }})">
+                                            <div class="widget-stat card bg-dark" id="class-{{ taught_class.id }}">
+                                                <div class="card-body p-4">
+                                                    <div class="media">
+                                                        <span class="me-3"><i class="la la-users"></i></span>
+                                                        <div class="media-body text-white">
+                                                            <p class="mb-1">{{ taught_class }}</p>
+                                                            <h3 class="text-white">{{ taught_class.class }}</h3>
+                                                            <div class="progress mb-2 bg-secondary">
+                                                                <div class="progress-bar progress-animated bg-light"
+                                                                     style=""></div>
+                                                            </div>
+                                                            <small>میانگین کل کلاس {{ taught_class|average_score }}</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div
+                                    id="select-semester"
+                                    class="tab-pane"
+                                    role="tabpanel"
+                            >
+                                <div class="row">
+                                    {% for semester in semesters %}
+                                        <div class="col-lg-4 hoverable taught-class-item"
+                                             onclick="setSelectedSemester({{ semester.id }})">
+                                            <div class="widget-stat card bg-dark" id="semester-{{ semester.id }}">
+                                                <div class="card-body p-4">
+                                                    <div class="media">
+                                                        <span class="me-3"><i class="la la-users"></i></span>
+                                                        <div class="media-body text-white">
+                                                            <p class="display-1 text-white">{{ semester.semester }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div
+                                    id="enter-scores"
+                                    class="tab-pane"
+                                    role="tabpanel"
+                            >
+                                <div class="row">
+                                    <div class="card">
+                                        <div class="card-header"><h4 class="card-title">فرم وارد کردن نمرات</h4></div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-responsive-md">
+                                                    <thead>
+                                                    <tr>
+                                                        <th style="width:80px;"><strong>#</strong></th>
+                                                        <th><strong>نام</strong></th>
+                                                        <th><strong>نام خانوادگی</strong></th>
+                                                        <th><strong>ترم</strong></th>
+                                                        <th><strong>نمرات</strong></th>
+                                                        <th><strong>ثبت نمره جدید</strong></th>
+
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    {% for student in students %}
+                                                        <tr>
+                                                            <td><strong>{{ forloop.counter }}</strong></td>
+                                                            <td>{{ student.profile.user.first_name }}</td>
+                                                            <td>{{ student.profile.user.last_name }}</td>
+                                                            <td>ترم {{ semester }}</td>
+                                                            <td class="row gap-1" id="scores-{{ student.id }}">
+                                                                {% for score in student.scores|score_filter:taught_class %}
+                                                                    {% if score.continuous_score > 15 %}
+                                                                        <span class="col-5 badge badge-success co-score hoverable"
+                                                                              id="{{ score.id }}" data-bs-toggle="modal"
+                                                                              data-bs-target="#change-{{ score.id }}"
+                                                                              >{{ score.continuous_score }}</span>
+                                                                    {% elif score.continuous_score <= 15 and score.continuous_score >= 10 %}
+                                                                        <span class="col-5 badge badge-warning co-score hoverable"
+                                                                              id="{{ score.id }}" data-bs-toggle="modal"
+                                                                              data-bs-target="#change-{{ score.id }}"
+                                                                              >{{ score.continuous_score }}</span>
+                                                                    {% elif score.continuous_score < 10 %}
+                                                                        <span class="col-5 badge badge-danger co-score hoverable"
+                                                                              id="{{ score.id }}" data-bs-toggle="modal"
+                                                                              data-bs-target="#change-{{ score.id }}"
+                                                                              >{{ score.continuous_score }}</span>
+                                                                    {% endif %}
+                                                                        <div class="modal fade show" id="change-{{ score.id }}"><div class="modal-dialog modal-dialog-centered" role="document"><div class="modal-content">
+                                                                            <div class="modal-header">
+                                                                                <h5 class="modal-title">ویرایش نمره {{ student }}</h5>
+                                                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                                            </div>
+                                                                            <div class="modal-body">
+                                                                                <form id="form-change-{{ score.id }}">
+                                                                                    <input type="text" name="score" class="form-control" value="{{ score.continuous_score }}">
+                                                                                    <button class="btn btn-success"  style="margin-top: 15px">ثبت</button>
+                                                                                </form>
+                                                                                <button class="btn btn-danger" style="margin-top: 5px" onclick="deleteScore('{{ score.id }}')">حذف نمره</button>
+                                                                            </div>
+                                                                            <div class="modal-footer">
+                                                                            </div>
+                                                                        </div></div></div>
+                                                                        <script>
+                                                                            window.addEventListener('DOMContentLoaded', (event) => {
+                                                                                $('#form-change-{{ score.id }}').on('submit', function (event) {
+                                                                                    event.preventDefault();
+                                                                                    updateScore("{{ score.id }}", this.score.value)
+                                                                                })
+                                                                            });
+                                                                        </script>
+                                                                {% endfor %}
+                                                            </td>
+                                                            <td>
+                                                                <form class="score-form">
+                                                                    <input type="hidden" name="student"
+                                                                           value="{{ student.id }}">
+                                                                    <input type="hidden" name="semester"
+                                                                           value="{{ semester }}">
+                                                                    <input type="hidden" name="taughtClass"
+                                                                           value="{{ taught_class }}">
+
+                                                                    <div class="row">
+                                                                        <div class="col-8">
+                                                                            <input type="text" name="score"
+                                                                                   class="form-control">
+                                                                        </div>
+                                                                        <div class="col-2">
+                                                                            <button class="btn btn-success">ثبت</button>
+                                                                        </div>
+                                                                    </div>
+                                                                </form>
+                                                            </td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        $(document).ready(function () {
+            localStorage.setItem('semester', false);
+            $("#smartwizard").smartWizard();
+            $('.btn.btn-primary.sw-btn-next').addClass('disabled')
+            $(".btn.btn-primary.sw-btn-next").on('click', function () {
+                if (localStorage.getItem('class_id') && localStorage.getItem('semester') !== 'false') {
+                    location.href = `/panel/scores/manage/${localStorage.getItem('class_id')}/${localStorage.getItem('semester')}#enter-scores`
+                }
+            })
+            $(".btn.btn-primary.sw-btn-prev").on('click', function () {
+                if (location.href.endsWith('#select-semester')) {
+                    location.href = '/panel/scores/manage';
+                } else if (location.href.endsWith('#enter-scores')) {
+                    location.href = '/panel/scores/manage#select-semester';
+                }
+            })
+        });
+
+        // select the class in Score Management Page
+        function setSelectedClass(id) {
+            try {
+                document.getElementById(`class-${localStorage.getItem('class_id')}`).classList.remove('bg-primary')
+            } catch {
+            }
+            localStorage.setItem('class_id', id)
+            $('.btn.btn-primary.sw-btn-next').removeClass('disabled')
+            document.getElementById(`class-${id}`).classList.add('bg-primary')
+        }
+
+        // select the semester in Score Management Page
+        function setSelectedSemester(id) {
+            try {
+                document.getElementById(`semester-${localStorage.getItem('semester')}`).classList.remove('bg-primary')
+            } catch (err) {
+            }
+            localStorage.setItem('semester', id)
+            $('.btn.btn-primary.sw-btn-next').removeClass('disabled')
+            document.getElementById(`semester-${id}`).classList.add('bg-primary')
+        }
+
+        function getSelectedClass() {
+            return localStorage.getItem('class_id')
+        }
+        $('.score-form').on('submit', function (event) {
+            event.preventDefault();
+            const score = this.score.value;
+            const student = this.student.value;
+            const semester = this.semester.value;
+            const taughtClass = this.taughtClass.value;
+
+            $.ajax({
+                url: "{% url 'create_score' %}",
+                type: 'POST',
+                data: {
+                    "continuous_score": score,
+                    "student": student,
+                    "taught_class": taughtClass,
+                    "semester": semester
+                },
+                dataType: 'json',
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken")
+                },
+                success: function (data) {
+                    console.log(`added ${data}`);
+                    if (data.continuous_score > 15) {
+                        $(`#scores-${student}`).append(
+                            `<span class="col-5 badge badge-success co-score hoverable"
+                              id="${data.id}">${data.continuous_score}</span>`
+                        )
+                    } else if (data.continuous_score <= 15 && score.continuous_score >= 10) {
+                        $(`#scores-${student}`).append(
+                            `<span class="col-5 badge badge-warning co-score hoverable"
+                              id="${data.id}">${data.continuous_score}</span>`
+                        )
+                    } else if (data.continuous_score < 10) {
+                        $(`#scores-${student}`).append(
+                            `<span class="col-5 badge badge-danger co-score hoverable"
+                              id="${data.id}">${data.continuous_score}</span>`
+                        )
+                    }
+                    toastr.success('با موفقیت ثبت شد', 'موفقیت آمیز!');
+                },
+                error: function (xhr, status, error) {
+                    // Handle error
+                    console.error('Error:', status, error);
+                }
+            });
+        });
+
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    // Check if this cookie string begins with the name we want
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        function deleteScore(score_id) {
+            $.ajax({
+                url: `/panel/scores/destroy-score-api/${score_id}`,
+                type: 'DELETE',
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken")
+                },
+                success: function (data) {
+                    $(`#${score_id}`).hide()
+                    toastr.success('با موفقیت حذف شد.', 'موفقیت آمیز ✔');
+                }
+            })
+        }
+        function updateScore(score_id, new_score) {
+           $.ajax({
+                url: `/panel/scores/update-score-api/${score_id}`,
+                type: 'PATCH',
+                data: {
+                    "continuous_score": new_score,
+                },
+                dataType: 'json',
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken")
+                },
+                success: function (data) {
+                    let status =
+                        data.continuous_score > 15
+                            ? 'success'
+                            : data.continuous_score <= 15 && data.continuous_score >= 10
+                            ? 'warning'
+                            : data.continuous_score < 10
+                            ? 'danger'
+                            : false;
+                    console.log(status);
+                    $(`#${data.id}`).html(parseFloat(data.continuous_score).toFixed(1)).removeClass(/\bbadge-[a-zA-Z0-9-]+\b(?=\s)/).addClass(`badge-${status}`);
+                    toastr.success('با موفقیت ویرایش یافت.', 'موفقیت آمیز ✔');
+                },
+                error: function (xhr, status, error) {
+                    toastr.error('مشکلی حین ویرایش پیش آمد، دوباره تلاش کنید.', 'خطا ❗')
+                    console.error('Error:', status, error);
+                }
+            });
+        }
+
+    </script>
+{% endblock %}
