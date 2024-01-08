@@ -1,5 +1,18 @@
+import io
+from datetime import date
+
+from PIL import Image
+import numpy as np
+from django.db.models import Count
+from django.db.models.functions import TruncMonth
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
+from django.utils.baseconv import base64
+from django.utils.decorators import method_decorator
 from django.views import View
+from django.views.decorators.csrf import csrf_exempt
+from django.views.generic import TemplateView
+from matplotlib import pyplot as plt
 from rest_framework import status
 from rest_framework.generics import CreateAPIView, UpdateAPIView, DestroyAPIView
 from rest_framework.response import Response
@@ -107,3 +120,55 @@ class ReportSheetScoreUpdate(APIView):
         else:
             # Return a 400 Bad Request response with the validation errors.
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# Student scores Chart View
+class StudentListChartView(TemplateView):
+    template_name = 'panel/score/student-chart.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated and request.user.profile.role == Profile.STUDENT:
+            return HttpResponseRedirect('dashboard')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        taught_classes = self.request.user.profile.teacher.taught_class.all()
+        context['taught_classes'] = taught_classes
+        return context
+
+
+# Return charts data
+@method_decorator(csrf_exempt, name='dispatch')  # Use csrf_exempt for demonstration, consider adding proper CSRF protection
+class ScoreChartAPI(APIView):
+    def get(self, request, taught_class):
+        # Query the database to get the data grouped by month
+        data = Score.objects.filter(taught_class_id=taught_class).annotate(month=TruncMonth('modified_date')).values('month').annotate(count=Count('id'))
+
+        # Extract data for the chart
+        months = [entry['month'] for entry in data]
+        counts = [entry['count'] for entry in data]
+
+        # Create a simple bar chart using matplotlib
+        fig, ax = plt.subplots()
+        ax.bar(months, counts)
+        ax.set_xlabel('Month')
+        ax.set_ylabel('Count')
+        ax.set_title('Scores Grouped by Month')
+
+        # Save the chart to a BytesIO object as a PIL Image
+        image_stream = io.BytesIO()
+        plt.savefig(image_stream, format='png')
+        image_stream.seek(0)
+
+        # Open the PIL Image
+        image = Image.open(image_stream)
+
+        # Convert PIL Image to bytes and encode as base64
+        image_bytes = io.BytesIO()
+        image.save(image_bytes, format='PNG')
+        image_bytes.seek(0)
+
+        # Return the base64-encoded image string in the API response
+        return HttpResponse(image_bytes, content_type='image/png', status=status.HTTP_200_OK)
+

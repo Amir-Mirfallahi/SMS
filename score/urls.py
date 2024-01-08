@@ -14,5 +14,9 @@ urlpatterns = [
     path('manage/report-sheet/<int:taughtclass_id>/<int:semester_id>', EnterReportSheetScoresView.as_view(),
          name='enter_report_sheet_scores'),
     path('get-report-sheet-score/', ReportSheetScoreRetrieve.as_view(), name='report_sheet_retrieve'),
-    path('update-report-sheet-score/', ReportSheetScoreUpdate.as_view(), name='report_sheet_retrieve_update')
+    path('update-report-sheet-score/', ReportSheetScoreUpdate.as_view(), name='report_sheet_retrieve_update'),
+    # Student Chart Views
+    path('students/chart/', StudentListChartView.as_view(), name="student_chart"),
+    path('get-chart-image/<taught_class>', ScoreChartAPI.as_view(), name="image_chart")
+
 ]

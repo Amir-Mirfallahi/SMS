@@ -52,6 +52,10 @@ class TaughtClass(models.Model):
 class Student(models.Model):
     profile = models.OneToOneField(Profile, models.CASCADE, related_name='student', verbose_name='کاربر', unique=True)
     _class = models.ForeignKey(Class, models.CASCADE, verbose_name='کلاس')
+    is_observer = models.BooleanField('نماینده است؟')
+
+    def get_class(self):
+        return self._class
 
     class Meta:
         verbose_name = 'دانش آموز'

@@ -1,0 +1,111 @@
+{% extends 'panel/base.html' %}
+{% load score_tag %}
+
+{% block content %}
+    <div class="row page-titles">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item active">
+                <a href="/panel">صفحه اصلی</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="#">نمودار دانش آموزان</a>
+            </li>
+        </ol>
+    </div>
+    <div class="row">
+        <div class="col-xl-12col-xxl-12">
+            <div class="card">
+                <div class="card-header"><h4 class="card-title">دانش آموزان</h4></div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-responsive-md">
+                            <thead>
+                            <tr>
+                                <th style="width:80px;"><strong>#</strong></th>
+                                <th><strong>نام کلاس</strong></th>
+                                <th><strong>تعداد دانش آموزان</strong></th>
+                                <th><strong>میانگین نمرات</strong></th>
+                                <th><strong>اقدامات</strong></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for taught_class in taught_classes %}
+                                <tr>
+                                    <td><strong>{{ forloop.counter }}</strong></td>
+                                    <td>{{ taught_class }}</td>
+                                    <td>{{ taught_class|get_student_length }}</td>
+                                    <td>{{ taught_class.id|get_scores_avg }}</td>
+                                    <td>
+                                        <button class="btn btn-primary mb-2" data-bs-toggle="modal"
+                                                data-bs-target="#chart-{{ taught_class.id }}">مشاهده نمودار
+                                        </button>
+                                        <div
+                                                class="modal fade"
+                                                id="chart-{{ taught_class.id }}"
+                                        >
+                                            <div
+                                                    class="modal-dialog modal-dialog-centered"
+                                                    role="document"
+                                            >
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">
+                                                            نمودار {{ taught_class }}
+                                                        </h5>
+                                                        <button
+                                                                type="button"
+                                                                class="btn-close"
+                                                                data-bs-dismiss="modal"
+                                                        ></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <canvas id="taught_class_chart_{{ taught_class.id }}">
+                                                        </canvas>
+                                                        <script>
+                                                            // Your Chart.js code goes here
+                                                            var ctx = document.getElementById('taught_class_chart_{{ taught_class.id }}').getContext('2d');
+                                                            var myChart = new Chart(ctx, {
+                                                                type: 'line',
+                                                                data: {
+                                                                    labels: {{ taught_class|get_chart_label }},
+                                                                    datasets: [{
+                                                                        label: 'Average Values',
+                                                                        data: {{ taught_class|get_chart_data }},
+                                                                        borderColor: 'blue',
+                                                                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                                                                    }]
+                                                                },
+                                                                options: {
+                                                                    scales: {
+                                                                        y: {
+                                                                            beginAtZero: true
+                                                                        }
+                                                                    }
+                                                                }
+                                                            });
+                                                        </script>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button
+                                                                type="button"
+                                                                class="btn btn-danger light"
+                                                                data-bs-dismiss="modal"
+                                                        >
+                                                            بستن
+                                                        </button
+                                                        >
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

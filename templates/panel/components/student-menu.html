@@ -15,8 +15,9 @@
                 class="flaticon-381-folder-15"></i><span class="nav-text">تکلیف</span></a>
         <ul aria-expanded="false">
             <li><a href="/panel/homework/">جدول تکالیف</a></li>
-            {# if the user is observer student #}
-            <li><a href="/panel/homework/add">ثبت تکلیف</a></li>
+            {% if user.student.is_observer %}
+                <li><a href="/panel/homework/add">ثبت تکلیف</a></li>
+            {% endif %}
         </ul>
     </li>
     <li>
